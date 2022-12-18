@@ -1,16 +1,42 @@
-name: part-1
+name: uah-cloud-computing-final-assignment-part-1
+x-anchors:
+  volumes_default:
+    - &host_timezone \\wsl$\Ubuntu-20.04\etc\timezone:/etc/timezone:ro
+    - &host_localtime \\wsl$\Ubuntu-20.04\etc\localtime:/etc/localtime:ro
 services:
-  portainer:
-    image: portainer/portainer-ce
-    restart: always
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginx-proxy-manager-service
+    restart: unless-stopped
+    networks:
+      - nginx-proxy-manager_network_default
     ports:
-      - 8000:8000
-      - 9443:9443
+      - 80:80
+      - 81:81
+      - 443:443
     volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
+      - *host_timezone
+      - *host_localtime
+      - nginx_proxy_manager_data:/data
+      - nginx_proxy_manager_letsencrypt:/etc/letsencrypt
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer-service
+    restart: unless-stopped
+    networks:
+      - nginx-proxy-manager_network_default
+    volumes:
+      - *host_timezone
+      - *host_localtime
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - portainer_data:/data
 volumes:
   portainer_data:
-    external: true
+    name: portainer_data
+  nginx_proxy_manager_data:
+    name: nginx_proxy_manager_data
+  nginx_proxy_manager_letsencrypt:
+    name: nginx_proxy_manager_letsencrypt
+networks:
+  nginx-proxy-manager_network_default:
+    name: nginx-proxy-manager_network_default
