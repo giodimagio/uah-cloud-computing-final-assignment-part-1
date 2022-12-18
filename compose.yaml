@@ -30,6 +30,20 @@ services:
       - *host_localtime
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - portainer_data:/data
+  gitlab:
+    image: 'gitlab/gitlab-ce:latest'
+    container_name: gitlab-service
+    restart: unless-stopped
+    networks:
+      - nginx-proxy-manager_network_default
+    volumes:
+      - gitlab_config:/etc/gitlab
+      - gitlab_logs:/var/log/gitlab
+      - gitlab_data:/var/opt/gitlab
+    shm_size: '256m'
+networks:
+  nginx-proxy-manager_network_default:
+    name: nginx-proxy-manager_network_default
 volumes:
   portainer_data:
     name: portainer_data
@@ -37,6 +51,9 @@ volumes:
     name: nginx_proxy_manager_data
   nginx_proxy_manager_letsencrypt:
     name: nginx_proxy_manager_letsencrypt
-networks:
-  nginx-proxy-manager_network_default:
-    name: nginx-proxy-manager_network_default
+  gitlab_config:
+    name: gitlab_config
+  gitlab_logs:
+    name: gitlab_logs
+  gitlab_data:
+    name: gitlab_data
