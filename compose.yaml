@@ -1,3 +1,4 @@
+# Giodimagio: Mi entorno de desarrollo local
 name: ${COMPOSE_PROJECT_NAME}
 x-anchors:
   volumes_default:
@@ -44,6 +45,7 @@ services:
 networks:
   nginx-proxy-manager_network_default:
     name: nginx-proxy-manager_network_default
+    external: true
 volumes:
   portainer_data:
     name: portainer_data
