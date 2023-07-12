@@ -1,25 +1,35 @@
 # Giodimagio: Mi entorno de desarrollo local
+
+# Define el nombre del proyecto de docker-compose con la variable de entorno COMPOSE_PROJECT_NAME
 name: ${COMPOSE_PROJECT_NAME}
+# Extension que permite definir elementos reutilizables
 x-anchors:
+  # Nombre del elemento reutilizable
   volumes_default:
-    - &host_timezone ${HOST_TIMEZONE_PATH}:/etc/timezone:ro
-    - &host_localtime ${HOST_LOCALTIME_PATH}:/etc/localtime:ro
+    # Objetos referenciados a variables de entorno con un & reutilizables con un *.
+    - &host_timezone ${HOST_TIMEZONE_PATH}:/etc/timezone:ro # Mapea el path con la zona horaria del host al contenedor
+    - &host_localtime ${HOST_LOCALTIME_PATH}:/etc/localtime:ro # Mapea el path con la hora local del host al contenedor
+# Define los servicios que se ejecutaran en el docker-compose
 services:
+  # Nombre del servicio
   nginx-proxy-manager:
-    image: jc21/nginx-proxy-manager:latest
-    container_name: nginx-proxy-manager-service
-    restart: unless-stopped
+    image: jc21/nginx-proxy-manager:latest # Imagen del servicio
+    container_name: nginx-proxy-manager-service # Nombre del contenedor
+    restart: unless-stopped # Define la politica de reinicio del contenedor. Se reiniciará siempre que no se haya parado manualmente
+    # Define las redes a las que pertenece el contenedor
     networks:
-      - nginx-proxy-manager_network_default
+      - nginx-proxy-manager_network_default # Nombre de la red
+    # Define los puertos que se exponen del contenedor al host
     ports:
-      - ${NGINXPM_PORT_ADMIN}:81
-      - ${NGINXPM_PORT_HTTP}:80
-      - ${NGINXPM_PORT_HTTPS}:443
+      - ${NGINXPM_PORT_ADMIN}:81 # Puertos: <puerto_contenedor>:<puerto_host>, 81:81
+      - ${NGINXPM_PORT_HTTP}:80 # Puertos: <puerto_contenedor>:<puerto_host>, 80:80
+      - ${NGINXPM_PORT_HTTPS}:443 # Puertos: <puerto_contenedor>:<puerto_host>, 443:443
+    # Define los volumenes que se montan en el contenedor
     volumes:
-      - *host_timezone
-      - *host_localtime
-      - nginx_proxy_manager_data:/data
-      - nginx_proxy_manager_letsencrypt:/etc/letsencrypt
+      - *host_timezone # Volumne que mapea la zona horaria del host al contenedor
+      - *host_localtime # Volumne que mapea la hora local del host al contenedor
+      - nginx_proxy_manager_data:/data # Volumen que mapea la carpeta de datos del contenedor al host
+      - nginx_proxy_manager_letsencrypt:/etc/letsencrypt # Volumen que mapea la carpeta de certificados del contenedor al host
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer-service
@@ -29,7 +39,7 @@ services:
     volumes:
       - *host_timezone
       - *host_localtime
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Mapea el socket de docker del host al contenedor
       - portainer_data:/data
   gitlab:
     image: 'gitlab/gitlab-ce:latest'
@@ -38,15 +48,19 @@ services:
     networks:
       - nginx-proxy-manager_network_default
     volumes:
-      - gitlab_config:/etc/gitlab
-      - gitlab_logs:/var/log/gitlab
-      - gitlab_data:/var/opt/gitlab
-    shm_size: '256m'
+      - gitlab_config:/etc/gitlab # Mapea la carpeta de configuración del contenedor al host
+      - gitlab_logs:/var/log/gitlab # Mapea la carpeta de logs del contenedor al host
+      - gitlab_data:/var/opt/gitlab # Mapea la carpeta de datos del contenedor al host
+    shm_size: '256m' # Define el tamaño de la memoria compartida del contenedor
+# Define las redes que se utilizaran en el docker-compose
 networks:
+  # Nombre de la red
   nginx-proxy-manager_network_default:
     name: nginx-proxy-manager_network_default
-    external: true
+    external: true # Indica que la red existe previamente y no se creará
+# Define los volumenes que se utilizaran en el docker-compose
 volumes:
+  # Nombre de los volumenes
   portainer_data:
     name: portainer_data
   nginx_proxy_manager_data:
